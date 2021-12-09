@@ -1,0 +1,16 @@
+domain: my.domain
+layout:
+- library.go.sdk.operatorframework.io/v1
+projectName: memcached-operator-lib-go
+repo: github.com/openshift/cert-manager-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: my.domain
+  group: operator.openshift.io
+  kind: CertManager
+  path: github.com/openshift/cert-manager-operator/api/v1alpha1
+  version: v1alpha1
+version: "3"
