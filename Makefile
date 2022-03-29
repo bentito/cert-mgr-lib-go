@@ -11,6 +11,17 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+include $(addprefix ./vendor/github.com/openshift/build-machinery-go/make/, \
+	golang.mk \
+	targets/openshift/bindata.mk \
+	targets/openshift/images.mk \
+	targets/openshift/imagebuilder.mk \
+	targets/openshift/deps.mk \
+	targets/openshift/operator/telepresence.mk \
+	targets/openshift/operator/profile-manifests.mk \
+	targets/openshift/crd-schema-gen.mk \
+)
+
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # This is a requirement for 'setup-envtest.sh' in the test target.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
@@ -53,6 +64,22 @@ test: manifests generate fmt vet ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
 ##@ Build
+desired-build: # generate fmt vet ## Build manager binary.
+	# Include the library makefiles
+
+	# $1 - target name
+	# $2 - apis
+	# $3 - manifests
+	# $4 - output
+	$(call add-crd-gen,operator-alpha,./apis/operator/v1alpha1,./bundle/manifests,./bundle/manifests)
+	$(call add-crd-gen,config-alpha,./apis/config/v1alpha1,./bundle/manifests,./bundle/manifests)
+
+	# generate bindata targets
+	$(call add-bindata,assets,./bindata/...,bindata,assets,pkg/operator/assets/bindata.go)
+
+	# generate image targets
+	$(call build-image,cert-manager-operator,$(IMAGE_OPERATOR),./images/ci/Dockerfile,.)
+	$(call build-image,cert-manager-operator-bundle,$(IMAGE_OPERATOR_BUNDLE),./bundle/bundle.Dockerfile,./bundle)
 
 build: generate fmt vet ## Build manager binary.
 	go build -o bin/manager cmd/main.go
