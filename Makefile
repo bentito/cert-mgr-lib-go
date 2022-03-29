@@ -64,25 +64,25 @@ test: manifests generate fmt vet ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
 ##@ Build
-desired-build: # generate fmt vet ## Build manager binary.
-	# Include the library makefiles
 
-	# $1 - target name
-	# $2 - apis
-	# $3 - manifests
-	# $4 - output
-	$(call add-crd-gen,operator-alpha,./apis/operator/v1alpha1,./bundle/manifests,./bundle/manifests)
-	$(call add-crd-gen,config-alpha,./apis/config/v1alpha1,./bundle/manifests,./bundle/manifests)
+# Include the library makefiles
 
-	# generate bindata targets
-	$(call add-bindata,assets,./bindata/...,bindata,assets,pkg/operator/assets/bindata.go)
+# $1 - target name
+# $2 - apis
+# $3 - manifests
+# $4 - output
+$(call add-crd-gen,operator-alpha,./apis/operator/v1alpha1,./bundle/manifests,./bundle/manifests)
+$(call add-crd-gen,config-alpha,./apis/config/v1alpha1,./bundle/manifests,./bundle/manifests)
 
-	# generate image targets
-	$(call build-image,cert-manager-operator,$(IMAGE_OPERATOR),./images/ci/Dockerfile,.)
-	$(call build-image,cert-manager-operator-bundle,$(IMAGE_OPERATOR_BUNDLE),./bundle/bundle.Dockerfile,./bundle)
+# generate bindata targets
+$(call add-bindata,assets,./bindata/...,bindata,assets,pkg/operator/assets/bindata.go)
 
-build: generate fmt vet ## Build manager binary.
-	go build -o bin/manager cmd/main.go
+# generate image targets
+$(call build-image,cert-manager-operator,$(IMAGE_OPERATOR),./images/ci/Dockerfile,.)
+$(call build-image,cert-manager-operator-bundle,$(IMAGE_OPERATOR_BUNDLE),./bundle/bundle.Dockerfile,./bundle)
+
+#build: generate fmt vet ## Build manager binary.
+#	go build -o bin/manager cmd/main.go
 
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run cmd//main.go
