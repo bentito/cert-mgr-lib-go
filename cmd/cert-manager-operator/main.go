@@ -17,6 +17,10 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/openshift/cert-manager-operator/pkg/cmd/operator"
+	"github.com/spf13/cobra"
+	"os"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -53,6 +57,24 @@ func main() {
 	}
 
 	<-ctx.Done()
+	command := NewOperatorCommand()
+	if err := command.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
 	return
 
+}
+
+func NewOperatorCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "cert-manager-operator",
+		Short: "OpenShift cluster cert-manager operator",
+		Run: func(cmd *cobra.Command, args []string) {
+			cmd.Help()
+			os.Exit(1)
+		},
+	}
+	cmd.AddCommand(operator.NewOperator())
+	return cmd
 }
