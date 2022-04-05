@@ -16,47 +16,28 @@ limitations under the License.
 package main
 
 import (
-	"context"
+	goflag "flag"
 	"fmt"
 	"github.com/openshift/cert-manager-operator/pkg/cmd/operator"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	utilflag "k8s.io/component-base/cli/flag"
+	"k8s.io/component-base/logs"
+	"math/rand"
 	"os"
-
-	ctrl "sigs.k8s.io/controller-runtime"
+	"time"
+	//ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func main() {
-	ctx := context.TODO()
+	rand.Seed(time.Now().UTC().UnixNano())
 
-	// Create a *rest.Config for talking to a Kubernetes apiserver.
-	// If you would like to specify the kubeconfig manually, this can be removed.
-	_ = ctrl.GetConfigOrDie()
+	pflag.CommandLine.SetNormalizeFunc(utilflag.WordSepNormalizeFunc)
+	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 
-	// TODO: Instantiate the required resources to create new instances of the
-	// controller. In order to run the controller successfully, make sure to start
-	// the informers first.
+	logs.InitLogs()
+	defer logs.FlushLogs()
 
-	// Start the informers to make sure their caches are in sync and are updated periodically.
-	for _, informer := range []interface {
-		Start(stopCh <-chan struct{})
-	}{
-		// TODO: If there are any informers for your controller, make sure to
-		// add them here to start the informer.
-	} {
-		informer.Start(ctx.Done())
-	}
-
-	// Start and run the controller
-	for _, controllerint := range []interface {
-		Run(ctx context.Context, workers int)
-	}{
-		// TODO: Add the name of controllers which have been instantiated previosuly for the
-		// operator.
-	} {
-		go controllerint.Run(ctx, 1)
-	}
-
-	<-ctx.Done()
 	command := NewOperatorCommand()
 	if err := command.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
