@@ -1,3 +1,11 @@
+RUNTIME?=docker
+
+APP_NAME?=cert-manager-operator
+IMAGE_REGISTRY?=quay.io
+IMAGE_ORG?=btofel
+IMAGE_TAG?=latest
+IMAGE_OPERATOR?=$(IMAGE_REGISTRY)/$(IMAGE_ORG)/cert-manager-operator:$(IMAGE_TAG)
+IMAGE_OPERATOR_BUNDLE?=$(IMAGE_REGISTRY)/$(IMAGE_ORG)/cert-manager-operator-bundle:$(IMAGE_TAG)
 
 # Image URL to use all building/pushing image targets
 IMG ?= quay.io/btofel/controller:latest
@@ -137,3 +145,9 @@ endef
 local-run:
 	./cert-manager-operator start --config=./hack/local-run-config.yaml --kubeconfig=$${KUBECONFIG:-$$HOME/.kube/config} --namespace=openshift-cert-manager-operator
 .PHONY: local-run
+
+operator-push-bundle: images
+	$(RUNTIME) push $(IMAGE_OPERATOR)
+	$(RUNTIME) push $(IMAGE_OPERATOR_BUNDLE)
+.PHONY: operator-push-bundle
+
